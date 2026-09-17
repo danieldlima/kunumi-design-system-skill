@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Long title exception</title>
+  <style>
+    :root {
+      --kunumi-font-display: "Space Grotesk", "Figtree", sans-serif;
+      --kunumi-font: "Figtree", Arial, sans-serif;
+      --kunumi-chumbo: #1C2127;
+      --kunumi-gelo: #F0F0F0;
+      --kunumi-ground: var(--kunumi-gelo);
+      --kunumi-ink: var(--kunumi-chumbo);
+      --kunumi-track-display: 0.03em;
+    }
+    body {
+      background: var(--kunumi-ground);
+      color: var(--kunumi-ink);
+      margin: 0;
+      width: 900px;
+    }
+    /* Narrow enough that the wording decides the line count, not the viewport. */
+    .slot { width: 420px; }
+
+    .kunumi-title {
+      font-family: var(--kunumi-font-display);
+      font-size: 44px;
+      text-transform: uppercase;
+      letter-spacing: var(--kunumi-track-display);
+      line-height: 1.375;
+    }
+    /* The long-title exception: Figtree SemiBold, sentence case, tracking 0. */
+    .kunumi-title-long {
+      font-family: var(--kunumi-font);
+      font-size: 44px;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+      line-height: 1.375;
+    }
+    .kunumi-body {
+      font-family: var(--kunumi-font);
+      font-size: 20px;
+      line-height: 1.75;
+    }
+  </style>
+</head>
+<body>
+  <div class="slot">
+    <h2 class="kunumi-title" data-kunumi-role="title">O futuro informa</h2>
+    <p class="kunumi-body" data-kunumi-role="body">Duas linhas no display: dentro da regra.</p>
+  </div>
+  <div class="slot">
+    <h2 class="kunumi-title" data-kunumi-role="title" id="too-long">Como a Kunumi constrói sistemas de design que o time de fato usa</h2>
+    <p class="kunumi-body" data-kunumi-role="body">Passou de duas linhas ainda na display face.</p>
+  </div>
+  <div class="slot">
+    <h2 class="kunumi-title-long" data-kunumi-role="title" id="corrected">Como a Kunumi constrói sistemas de design que o time de fato usa</h2>
+    <p class="kunumi-body" data-kunumi-role="body">A mesma frase, já corrigida para Figtree.</p>
+  </div>
+</body>
+</html>

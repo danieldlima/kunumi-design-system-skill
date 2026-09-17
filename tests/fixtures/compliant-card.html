@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Compliant card</title>
+  <style>
+    :root {
+      --kunumi-font-display: "Space Grotesk", "Figtree", sans-serif;
+      --kunumi-font: "Figtree", Arial, sans-serif;
+      --kunumi-chumbo: #1C2127;
+      --kunumi-gelo: #F0F0F0;
+      --kunumi-ground: var(--kunumi-gelo);
+      --kunumi-ink: var(--kunumi-chumbo);
+    }
+    body {
+      background: var(--kunumi-ground);
+      color: var(--kunumi-ink);
+    }
+    .kunumi-display {
+      font-family: var(--kunumi-font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+    }
+    .kunumi-body {
+      font-family: var(--kunumi-font);
+      line-height: 1.75;
+    }
+    .card {
+      border-radius: 10px;
+      padding: 30px;
+      gap: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="kunumi-display">O futuro informa o presente</div>
+    <div class="kunumi-body">Texto de apoio em Figtree.</div>
+  </div>
+</body>
+</html>
