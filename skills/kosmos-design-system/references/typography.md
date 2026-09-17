@@ -25,14 +25,86 @@ PP Neue Machina is a **commercial face from Pangram Pangram** and is not bundled
 (SIL OFL) is bundled at `assets/local/fonts/SpaceGrotesk/`. Figtree (SIL OFL) is bundled at
 `assets/local/fonts/Figtree/`.
 
-Resolve the display face in this order:
+For **web delivery, the display face is Space Grotesk**, and PP Neue Machina is not in the stack
+at all:
 
-1. **PP Neue Machina Inktrap** — only if licensed and already present on the system, or if the
-   user supplies a local path. Do not download it.
-2. **Space Grotesk** — the brandbook's own stated alternate. This is the offline default.
-3. **Figtree SemiBold, uppercase** — last resort. State the substitution in your delivery note.
+1. **Space Grotesk** — the brandbook's own stated alternate, bundled under the SIL OFL.
+2. **Figtree SemiBold, uppercase** — last resort. State the substitution in your delivery note.
+
+PP Neue Machina Inktrap remains the brandbook's first choice, and for print or a desktop deck —
+where the licensed file travels with the document — it is still the right answer. It is excluded
+from the web stack because it cannot be served: `AGENTS.md` forbids bundling commercial software,
+so a browser will never receive it. Naming it anyway meant that a machine which happened to have
+it installed rendered titles in a face the delivered page could not use, and the two are not
+metrically compatible — "KONSTRUKT" at 100px measures 637.41px in PP Neue Machina against 584.91px
+in Space Grotesk. The same HTML broke lines differently depending on whose machine rendered it.
+
+Enforced by `typography.display.no-unservable-face`. Recorded as ADR 0015.
 
 Arial is a body fallback only. Never use Arial for display.
+
+### The long-title exception
+
+**Follow the table above by default. Past two rendered lines, a title goes to Figtree.**
+
+| Title length | Family | Case | Tracking |
+| --- | --- | --- | --- |
+| Up to 2 rendered lines | PP Neue Machina Inktrap, or Space Grotesk | uppercase | +3% |
+| **3 rendered lines or more** | **Figtree SemiBold** | **sentence case** | **0** |
+
+The display face earns its place through uppercase and +3% tracking, and both stop helping at
+length. Uppercase removes the word shapes a reader scans by, and positive tracking widens lines
+that are already long — so a three-line uppercase Inktrap title is the one place where the
+brandbook's title recipe reads worse than body type set large.
+
+The team's own slide template does exactly this. Its chapter page sets "Nome longo do capítulo 2"
+in Figtree sentence case, at title size — a long title, handled as a long title. See
+`slide-template-measured.md`.
+
+#### An opening statement is exempt
+
+**A statement is not a title, and the two-line limit does not apply to it.** Mark it
+`data-kunumi-role="statement"` and it keeps the display face at any length.
+
+The distinction is what the line *does*, not how long it is:
+
+| | Job | Role |
+| --- | --- | --- |
+| "O futuro informa o presente." | asserts something about the brand | `statement` |
+| "Inteligência para o que ainda não tem nome." | asserts something about the brand | `statement` |
+| "Duas medidas. Uma conclusão." | describes the two metrics below it | `title` |
+
+A statement is brand voice on a surface whose job is to open — a cover, a section divider. A title
+describes what is on the surface. Apply the test to the copy, not to the line count, or the
+exemption becomes a way of silencing the rule.
+
+Why it is safe to grant: the brandbook's own `Abertura/Título` is **180px on a 1920 stage**, and a
+statement at that size wraps past two lines by design. The argument in ADR 0012 for a two-line
+threshold assumed covers wrap to two; measuring the team's own reference slides showed they run
+three to five. The threshold is right for titles and wrong for statements, so statements are scoped
+out rather than the threshold being raised.
+
+**The exemption is narrow.** It removes the line limit and nothing else: a statement is still
+required to be uppercase and tracked +3%, because `typography.display.case` and
+`typography.display.tracking` key on the selector cascade rather than on the measured role. One
+statement per surface. Recorded as ADR 0018.
+
+Three things the long-title exception is **not**:
+
+- **It is not the availability fallback.** `fallbackOrder` answers "is the face licensed and
+  present"; this answers "is the title too long for the face". A licensed PP Neue Machina still
+  yields to Figtree at three lines.
+- **It is not a licence to lowercase short titles.** At one or two lines, uppercase is required
+  and `typography.display.case` still fires.
+- **It is not the first move.** Prefer cutting the title to two lines. Reaching for Figtree is
+  correct when the words are all load-bearing, not when the title is simply unedited.
+
+The threshold is two lines and not one because the brandbook's own `Abertura/Título` is 180px on a
+1920px stage: nearly every real cover wraps to two lines, and a one-line limit would retire the
+display face from the covers it was chosen for.
+
+Measured in the render pass by `typography.display.long-title`, which counts rendered line boxes —
+wrapping depends on the box, not on the stylesheet. Recorded as ADR 0012.
 
 ## Exact Type Variables
 

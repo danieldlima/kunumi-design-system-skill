@@ -99,8 +99,17 @@
   );
 
   /* ---- Typography ----------------------------------------------------------------------- */
-  --kunumi-font-display: "PP Neue Machina", "PP Neue Machina Inktrap", "Space Grotesk", "Figtree",
-    Arial, sans-serif;
+  /* No Arial here: typography.md is explicit that Arial is a body fallback only and must never
+     carry display type. The stack ends at the generic family instead.
+
+     No PP Neue Machina either, and that is deliberate for web work - see ADR 0015. It is
+     commercial software that AGENTS.md forbids bundling, so it can never be served; naming it
+     only meant that a machine which happens to have it installed rendered titles in a face the
+     delivered page cannot use. The two faces are not metrically compatible - "KONSTRUKT" at
+     100px measures 637.41px in PP Neue Machina against 584.91px in Space Grotesk - so the same
+     HTML broke lines differently depending on whose laptop rendered it. Space Grotesk is the
+     brandbook's own stated alternate and is bundled under the SIL OFL. */
+  --kunumi-font-display: "Space Grotesk", "Figtree", sans-serif;
   --kunumi-font: "Figtree", Arial, sans-serif;
 
   --kunumi-weight-light: 300;
@@ -223,7 +232,22 @@ body {
 
 .kunumi-title {
   font-size: var(--kunumi-text-title);
-  line-height: 1.55;
+  /* 1.375 measured on the team's slide template; see ADR 0009. */
+  line-height: 1.375;
+}
+
+/* The long-title exception: past two rendered lines the display face works against the title, so
+   it goes to Figtree SemiBold, sentence case, tracking 0. Keeps the display leading. Cutting the
+   title to two lines is the preferred fix; this is for when every word is load-bearing.
+   See typography.md#the-long-title-exception and ADR 0012. */
+.kunumi-title-long {
+  font-family: var(--kunumi-font);
+  font-size: var(--kunumi-text-title);
+  font-weight: var(--kunumi-weight-semibold);
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.375;
+  overflow-wrap: break-word;
 }
 
 .kunumi-menu {
