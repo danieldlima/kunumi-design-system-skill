@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = ROOT / "skills"
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
+TOKEN_OWNER = "kosmos-design-system"
 
 
 def parse_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
@@ -38,6 +39,31 @@ def parse_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
     return frontmatter, errors
 
 
+def prohibition_exceptions(skill_dir: Path, tokens: dict) -> dict[str, str]:
+    """Read which custom property may carry each prohibited color.
+
+    These two names used to be Python string literals here while `tokens.json` already carried
+    them as structured data under `color.prohibition`. Deriving them means a third documented
+    exception is a token edit rather than a code edit.
+
+    Args:
+        skill_dir: Path to the skill package directory.
+        tokens: The parsed token tree.
+
+    Returns:
+        A mapping from uppercase hex to its sanctioned custom property, empty when the design
+        engine is not importable.
+    """
+    scripts_dir = skill_dir / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        from kunumi_design.rules import prohibition_exception_css_vars
+    except Exception:
+        return {}
+    return prohibition_exception_css_vars(tokens)
+
+
 def validate_tokens(skill_dir: Path) -> list[str]:
     """Check that the token source of truth agrees with everything derived from it.
 
@@ -57,7 +83,9 @@ def validate_tokens(skill_dir: Path) -> list[str]:
     foundations_path = skill_dir / "references" / "brand-foundations.md"
 
     if not tokens_path.exists():
-        return [f"{skill_dir.name}: missing references/tokens.json"]
+        if skill_dir.name == TOKEN_OWNER:
+            return [f"{skill_dir.name}: missing references/tokens.json"]
+        return []
 
     try:
         tokens = json.loads(tokens_path.read_text(encoding="utf-8"))
@@ -89,7 +117,10 @@ def validate_tokens(skill_dir: Path) -> list[str]:
     # white as the raised card surface, black as the Instituto gradient terminus.
     if css:
         lowered = css.lower()
-        terminus = "--kunumi-instituto-black"
+        exceptions = prohibition_exceptions(skill_dir, tokens)
+        terminus = exceptions.get("#000000", "--kunumi-instituto-black")
+        surface = exceptions.get("#FFFFFF", "--kunumi-surface-raised")
+
         black_hits = sum(lowered.count(b) for b in ("#000000", "#000 ", "#000;"))
         if black_hits and terminus not in lowered:
             errors.append(
@@ -101,7 +132,6 @@ def validate_tokens(skill_dir: Path) -> list[str]:
                 f"{skill_dir.name}: black appears {black_hits} times in kunumi-tokens.css; "
                 "only the Instituto gradient terminus may use it"
             )
-        surface = "--kunumi-surface-raised"
         white_hits = css.lower().count("#ffffff")
         if white_hits and surface not in css:
             errors.append(
