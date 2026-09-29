@@ -1,9 +1,9 @@
 ---
-name: kosmos-design-system
+name: kunumi-design-system
 description: Design and review work in the Kunumi visual and verbal identity, covering Kunumi, Kunumi Unlimited, Instituto Kunumi, and Kunumi Colab. Use when work must apply Kunumi colors, place a Kunumi logo, set Kunumi typography, build a Kunumi web page, app, UI, slide, chart, or social asset, write or review Kunumi copy and tone of voice, choose an approved Kunumi asset, or check an artifact for Kunumi brand fidelity.
 ---
 
-# Kosmos Design System
+# Kunumi Design System
 
 Design in the Kunumi system, from the smallest relevant context set. The **Brandbook Kunumi Final
 (2025)** is the authority; the original templates and approved asset files remain the source of

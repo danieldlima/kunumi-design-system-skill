@@ -1,8 +1,8 @@
 <img src="assets/kunumi-icon-urucum.png" alt="Kunumi" width="200">
 
-# Kosmos Design System
+# Kunumi Design System
 
-Claude Code plugin that ships a single skill, [`kosmos-design-system`](skills/kosmos-design-system/SKILL.md),
+Claude Code plugin that ships a single skill, [`kunumi-design-system`](skills/kunumi-design-system/SKILL.md),
 for designing and reviewing artifacts in the approved Kunumi, Instituto Kunumi, and Kunumi
 Unlimited visual **and verbal** systems — web and UI, slides, charts, social assets, and copy.
 
@@ -18,7 +18,7 @@ it works with no network and no Figma access.
   marketplace.json            # single-plugin marketplace, source "./"
 assets/                       # plugin icons
 skills/
-  kosmos-design-system/
+  kunumi-design-system/
     SKILL.md                  # routing instructions (required)
     references/               # brand standards, loaded only when relevant
       tokens.json             # single source of truth for color and type
@@ -74,21 +74,21 @@ Symlink the **skill package**, not the repository root, so the personal skill di
 `SKILL.md` directly:
 
 ```bash
-ln -s "$PWD/skills/kosmos-design-system" ~/.claude/skills/kosmos-design-system
+ln -s "$PWD/skills/kunumi-design-system" ~/.claude/skills/kunumi-design-system
 ```
 
 The link points at the working tree, so edits take effect in the next session with no reinstall.
 Verify the link resolves:
 
 ```bash
-ls -l ~/.claude/skills/kosmos-design-system/SKILL.md
+ls -l ~/.claude/skills/kunumi-design-system/SKILL.md
 ```
 
 ### Shareable install
 
 ```bash
 claude plugin marketplace add .
-claude plugin install kosmos-design-system@kosmos-design-system
+claude plugin install kunumi-design-system@kunumi-design-system
 ```
 
 This route copies the plugin into `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, so
@@ -96,7 +96,7 @@ it captures a snapshot: later edits to the repository do not appear until the ve
 the plugin reinstalled. Prefer the symlink while developing the skill. Verify with:
 
 ```bash
-claude plugin details kosmos-design-system
+claude plugin details kunumi-design-system
 ```
 
 `claude plugin details` only knows about plugins — it reports "not found" for a symlinked personal
@@ -134,7 +134,7 @@ for web work, and `validate-skills.py` fails the build if the two drift.
 Build a self-contained copy outside the repository when publishing or sharing:
 
 ```bash
-python scripts/build_bundle.py --bundle-dir /tmp/kosmos-design-system-plugin
+python scripts/build_bundle.py --bundle-dir /tmp/kunumi-design-system-plugin
 ```
 
 Repository metadata is excluded.

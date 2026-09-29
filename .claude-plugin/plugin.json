@@ -1,11 +1,11 @@
 {
-  "name": "kosmos-design-system",
+  "name": "kunumi-design-system",
   "description": "Create and review artifacts with the approved Kunumi, Instituto Kunumi, and Kunumi Unlimited visual systems from the bundled local-first assets.",
   "version": "0.1.0",
   "author": {
     "name": "Kunumi"
   },
-  "repository": "https://github.com/danieldlima/kosmos-design-system-skill",
+  "repository": "https://github.com/danieldlima/kunumi-design-system-skill",
   "keywords": [
     "kunumi",
     "brand",

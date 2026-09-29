@@ -8,3 +8,6 @@ node_modules/
 output/
 *.skill
 .idea
+plans/
+examples/
+skills/kunumi-design-system/decisions
