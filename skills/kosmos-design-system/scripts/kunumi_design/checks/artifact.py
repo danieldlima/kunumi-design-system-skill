@@ -45,12 +45,19 @@ def artifact_format(rule: Rule, context: Context) -> Iterable[Finding]:
 
 @register("artifact_stale")
 def artifact_stale(rule: Rule, context: Context) -> Iterable[Finding]:
-    """Flag a render older than the sources it depicts.
+    """Flag a render that no longer depicts the sources it was made from.
 
-    Compares modification times against sibling sources named in `params.sources`. Coarse by
-    design: it cannot prove a render is wrong, only that it can no longer be trusted to be right,
-    which is the honest claim and enough to send it back through the loop.
+    When a `*.render.json` beside the render claims it and recorded source digests, each source
+    named in `params.sources` is compared by content: a changed hash is a stale render, whatever
+    the file times say. That is what makes the rule give the same answer on every checkout, since
+    git stamps files with the moment it wrote them rather than when they last changed.
+
+    A source with no recorded digest - a render made before digests were recorded, or a file the
+    render did not depict - falls back to comparing modification times. Coarse by design: it
+    cannot prove a render is wrong, only that it can no longer be trusted to be right.
     """
+    from ..render import content_digest
+
     target = context.target
     if target.kind not in ("raster", "vector"):
         return
@@ -60,10 +67,16 @@ def artifact_stale(rule: Rule, context: Context) -> Iterable[Finding]:
     except OSError:
         return
 
+    recorded = _recorded_sources(target.path)
     stale_against: list[str] = []
     for name in rule.params.get("sources", ()):
         source = target.path.parent / name
-        if source.exists() and source.stat().st_mtime > rendered_at:
+        if not source.exists():
+            continue
+        if name in recorded:
+            if content_digest(source) != recorded[name]:
+                stale_against.append(name)
+        elif source.stat().st_mtime > rendered_at:
             stale_against.append(name)
 
     if stale_against:
@@ -71,9 +84,30 @@ def artifact_stale(rule: Rule, context: Context) -> Iterable[Finding]:
             rule,
             None,
             locus=target.path.name,
-            observed=f"older than {', '.join(stale_against)}",
-            expected="a render newer than every source it depicts",
+            observed=f"{', '.join(stale_against)} changed since this render",
+            expected="a render of the current sources",
         )
+
+
+def _recorded_sources(render: Path) -> dict[str, str]:
+    """Read the source digests from the render record that claims a file.
+
+    Args:
+        render: The rendered file.
+
+    Returns:
+        Basename to SHA-256, empty when no record claims the file or the record predates digests.
+    """
+    for meta in render.parent.glob("*.render.json"):
+        try:
+            payload = json.loads(meta.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if payload.get("schema") != "kunumi.render/v1":
+            continue
+        if render.name in {Path(item).name for item in payload.get("renders", ())}:
+            return dict(payload.get("sources", {}))
+    return {}
 
 
 @register("artifact_unprovenanced")

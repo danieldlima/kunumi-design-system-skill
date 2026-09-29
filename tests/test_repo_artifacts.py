@@ -136,3 +136,59 @@ def test_preview_frames_are_annotated(web_dir):
     assert text.count("data-kunumi-frame=") == 4
     assert 'data-kunumi-exempt="viewer-chrome"' in text
     assert 'data-kunumi-role="logo"' in text
+
+
+def _copy_preview(web_dir, tmp_path):
+    """Copy the preview, its token sheet, one frame and the render record into a scratch dir."""
+    import shutil
+
+    for name in ("template-preview.html", "kunumi-tokens.css", "template-preview.render.json",
+                 "template-preview-kunumi-capa.png"):
+        shutil.copy2(web_dir / name, tmp_path / name)
+    return tmp_path / "template-preview-kunumi-capa.png"
+
+
+def test_staleness_survives_a_fresh_checkout(web_dir, tmp_path, registry, lint):
+    """A source rewritten with the same content is not a change.
+
+    A clone stamps every file with the moment git wrote it, in arbitrary order, so a source can
+    end up younger than a render of it. Judged by modification time that reads as stale on some
+    checkouts and current on others; judged by content it is current everywhere.
+    """
+    import os
+    import time
+
+    frame = _copy_preview(web_dir, tmp_path)
+    past = time.time() - 3600
+    os.utime(frame, (past, past))
+    _, triggered = lint(frame, registry)
+    assert "artifact.stale" not in triggered
+
+
+def test_a_changed_source_makes_the_render_stale_whatever_its_age(web_dir, tmp_path, registry, lint):
+    """The converse: a changed token sheet is caught even when the render looks newer."""
+    import os
+    import time
+
+    frame = _copy_preview(web_dir, tmp_path)
+    sheet = tmp_path / "kunumi-tokens.css"
+    sheet.write_text(sheet.read_text(encoding="utf-8") + "\n/* edited */\n", encoding="utf-8")
+    past = time.time() - 3600
+    os.utime(sheet, (past, past))
+    report, triggered = lint(frame, registry)
+    assert "artifact.stale" in triggered
+    observed = [f.observed for f in report.findings if f.rule == "artifact.stale"]
+    assert observed == ["kunumi-tokens.css changed since this render"]
+
+
+def test_render_record_carries_source_digests(web_dir):
+    """The committed record must hash what it depicts, or staleness falls back to file times."""
+    import json
+
+    from kunumi_design.render import content_digest
+
+    record = json.loads((web_dir / "template-preview.render.json").read_text(encoding="utf-8"))
+    assert record["sources"] == {
+        "kunumi-tokens.css": content_digest(web_dir / "kunumi-tokens.css"),
+        "template-preview.html": content_digest(web_dir / "template-preview.html"),
+    }

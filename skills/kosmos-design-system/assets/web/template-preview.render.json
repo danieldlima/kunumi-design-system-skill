@@ -1,6 +1,6 @@
 {
   "schema": "kunumi.render/v1",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "artifact": "assets/web/template-preview.html",
   "engine": "playwright-chromium",
   "renders": [
@@ -9,6 +9,10 @@
     "/Users/kunumi/dev/kunumi/kosmos-design-system-skill/skills/kosmos-design-system/assets/web/template-preview-instituto-gradiente.png",
     "/Users/kunumi/dev/kunumi/kosmos-design-system-skill/skills/kosmos-design-system/assets/web/template-preview-instituto-pixels.png"
   ],
+  "sources": {
+    "kunumi-tokens.css": "dc3a22a6592478411a839dc63b7d68198da81eec2c8db9d772821e8dc5c11111",
+    "template-preview.html": "c6c71cb189694176b8d4bfc50c0ea7f2495d4ec925ebb8a67ef1a32d5a316067"
+  },
   "measurements": [
     {
       "tag": "article",

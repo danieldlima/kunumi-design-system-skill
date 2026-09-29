@@ -13,13 +13,14 @@ runs and reports the measurement rules as skipped rather than passing them by de
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -161,6 +162,8 @@ class RenderResult:
         renders: Paths of the PNGs produced, one per frame.
         measurements: Measured elements.
         meta_path: Path of the written `*.render.json`.
+        sources: Basename of each source the render depicts - the HTML and every stylesheet it
+            links on disk - to the SHA-256 of its content at render time.
     """
 
     artifact: Path
@@ -168,15 +171,17 @@ class RenderResult:
     renders: tuple[Path, ...]
     measurements: tuple[Measurement, ...]
     meta_path: Path
+    sources: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Render the result as a JSON-ready mapping."""
         return {
             "schema": "kunumi.render/v1",
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "artifact": str(self.artifact),
             "engine": self.engine,
             "renders": [str(path) for path in self.renders],
+            "sources": dict(sorted(self.sources.items())),
             "measurements": [
                 {
                     "tag": item.tag,
@@ -197,6 +202,44 @@ class RenderResult:
                 for item in self.measurements
             ],
         }
+
+
+def content_digest(path: Path) -> str:
+    """Hash a file's content, the identity `artifact.stale` compares against.
+
+    Args:
+        path: File to hash.
+
+    Returns:
+        The hex SHA-256 of the file's bytes.
+    """
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def source_digests(html: Path) -> dict[str, str]:
+    """Digest the sources a render of `html` depicts.
+
+    Content, not modification time: a fresh checkout stamps every file with the moment it was
+    written, in whatever order git wrote them, so an mtime comparison calls a current render
+    stale - or a stale one current - depending on the checkout rather than on the content.
+
+    Args:
+        html: The artifact being rendered.
+
+    Returns:
+        Basename to SHA-256 for the HTML and every local stylesheet it links that resolves.
+    """
+    from . import scan
+
+    digests = {html.name: content_digest(html)}
+    document = scan.parse_html(scan.read_text(html), str(html))
+    for href in document.stylesheet_hrefs:
+        if "://" in href:
+            continue
+        linked = (html.parent / href).resolve()
+        if linked.is_file():
+            digests[linked.name] = content_digest(linked)
+    return digests
 
 
 def _parse_measurements(raw: list[dict[str, Any]]) -> tuple[Measurement, ...]:
@@ -301,6 +344,7 @@ def render_html(
         renders=renders,
         measurements=measurements,
         meta_path=out_dir / f"{slug}.render.json",
+        sources=source_digests(html),
     )
     result.meta_path.write_text(
         json.dumps(result.to_dict(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

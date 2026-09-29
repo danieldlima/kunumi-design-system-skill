@@ -277,7 +277,7 @@
       "severity": "violation",
       "params": { "sources": ["template-preview.html", "kunumi-tokens.css"] },
       "authority": "SKILL.md#nonnegotiables",
-      "message": "This render is older than the source it depicts, so it no longer shows what ships.",
+      "message": "A source this render depicts has changed since it was rendered, so it no longer shows what ships.",
       "fix": "Re-render the artifact: kunumi_critic.py render <html> --canvas <w>x<h>."
     },
     {
