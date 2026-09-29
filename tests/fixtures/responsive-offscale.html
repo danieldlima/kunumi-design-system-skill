@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Off-scale breakpoints</title>
+  <style>
+    .kunumi-body { line-height: 1.75; }
+    .layout { display: grid; gap: 16px; }
+    @media (min-width: 900px) {
+      .layout { gap: 24px; }
+    }
+    @media (max-width: 600px) {
+      .layout { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout"><p class="kunumi-body">Duas colunas inventadas.</p></div>
+</body>
+</html>

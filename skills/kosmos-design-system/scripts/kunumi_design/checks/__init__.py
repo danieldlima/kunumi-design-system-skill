@@ -483,7 +483,7 @@ def review(
     Returns:
         One report per artifact, in input order.
     """
-    from . import artifact, color, geometry, logo, motion, typography  # noqa: F401
+    from . import artifact, color, geometry, interaction, layout, logo, motion, typography  # noqa: F401
 
     reports: list[Report] = []
     for path in paths:

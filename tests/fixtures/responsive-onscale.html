@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>On-scale breakpoints</title>
+  <style>
+    .kunumi-body { line-height: 1.75; }
+    .layout { display: grid; gap: 16px; }
+    @media (min-width: 768px) {
+      .layout { gap: 24px; }
+    }
+    @media (min-width: 90em) {
+      .layout { gap: 24px; }
+    }
+    @media (max-width: 767.98px) {
+      .layout { gap: 8px; }
+    }
+    @media (width >= 1440px) {
+      .layout { gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout"><p class="kunumi-body">Mobile-first, 768 e 1440.</p></div>
+</body>
+</html>

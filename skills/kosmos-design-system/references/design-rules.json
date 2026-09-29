@@ -13,14 +13,22 @@
       "label": "New web, app or UI work under the 2025 brandbook",
       "inherits": []
     },
+    "web.published": {
+      "label": "A page that ships to a public URL",
+      "inherits": ["web.new"],
+      "adds": ["artifact.social-meta"],
+      "why": "web-specs.md#digital-formats: a published page is shared, and a share without og:image and a favicon renders as a bare link. Adds a rule; relaxes nothing.",
+      "detect": ["attr:data-kunumi-scope=web.published"]
+    },
     "web.deck-derived": {
       "label": "Web replica of a source slide deck",
       "inherits": ["web.new"],
       "demote": {
         "typography.display.case": "note",
-        "typography.line-height.display": "note"
+        "typography.line-height.display": "note",
+        "layout.breakpoint-scale": "note"
       },
-      "why": "template-design-system.md: editing an existing deck preserves the inherited Figtree type, and slide-index.json template.sourceFonts lists Arial. The decks predate the 2025 brandbook.",
+      "why": "template-design-system.md: editing an existing deck preserves the inherited Figtree type, and slide-index.json template.sourceFonts lists Arial. The decks predate the 2025 brandbook. A slide replica keeps the stage's own breakpoints, which are not the web layout's (decision 0029).",
       "detect": ["attr:data-kunumi-scope=web.deck-derived"]
     },
     "web.chart": {
@@ -276,11 +284,44 @@
       "id": "logo.min-height",
       "check": "logo_min_height",
       "severity": "violation",
-      "params": { "minPx": 28, "measure": "lockup-height" },
+      "params": { "measure": "lockup-height" },
       "requires": ["render"],
-      "authority": "logo-governance.md#minimum-size",
+      "authority": "tokens.json#logo.minHeight + logo-governance.md#minimum-size",
       "message": "The lockup is rendered below its 28px digital minimum.",
       "fix": "Raise the lockup to at least 28px of rendered height, or remove the mark from this surface."
+    },
+    {
+      "id": "layout.breakpoint-scale",
+      "check": "breakpoint_scale",
+      "severity": "advisory",
+      "authority": "tokens.json#layout.breakpoints + web-specs.md#breakpoints-and-grid + decisions/0029",
+      "message": "A media query sits off the Kunumi breakpoints.",
+      "fix": "Use min-width: 768px or 1440px, mobile-first. A max-width query may sit at 767.98px. If the layout genuinely needs another step, record why in a decision."
+    },
+    {
+      "id": "interaction.focus-visible",
+      "check": "focus_visible_present",
+      "severity": "advisory",
+      "authority": "tokens.json#interaction.focusRing + web-specs.md#states + WCAG 2.2 SC 2.4.7",
+      "message": "The artifact has keyboard-reachable elements and no focus style, so it shows the browser's ring instead of the Kunumi one.",
+      "fix": "Link kunumi-tokens.css, which carries the ring, or add a :focus-visible rule with outline: var(--kunumi-focus-ring-width) solid var(--kunumi-focus-ring)."
+    },
+    {
+      "id": "interaction.focus-outline-removed",
+      "check": "focus_indicator_removed",
+      "severity": "violation",
+      "authority": "WCAG 2.2 SC 2.4.7 + tokens.json#interaction.focusRing.rule + web-specs.md#states",
+      "message": "The focus outline is removed and nothing replaces it, so keyboard users lose their place.",
+      "fix": "Delete the outline: none, or scope it to :focus:not(:focus-visible) and keep the ring on :focus-visible."
+    },
+    {
+      "id": "artifact.social-meta",
+      "check": "social_meta_present",
+      "severity": "advisory",
+      "optIn": true,
+      "authority": "tokens.json#digital.og + web-specs.md#digital-formats",
+      "message": "A published page is missing the metadata a share needs.",
+      "fix": "Add og:title, og:image (1200x630, declared with og:image:width and og:image:height) and <link rel=\"icon\">."
     }
   ]
 }

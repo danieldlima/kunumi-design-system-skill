@@ -28,6 +28,8 @@ NONCOMPLIANT_CHART = {
     "color.chart.data-only",
     "color.superseded",
     "color.prefer-semantic-token",
+    # Its call-to-action button has no focus style and the page does not link the token sheet.
+    "interaction.focus-visible",
 }
 
 NONCOMPLIANT_LOGO = {
@@ -42,6 +44,14 @@ NONCOMPLIANT_LOGO = {
         ("noncompliant-card.html", NONCOMPLIANT_CARD),
         ("noncompliant-chart.html", NONCOMPLIANT_CHART),
         ("noncompliant-logo.html", NONCOMPLIANT_LOGO),
+        ("responsive-offscale.html", {"layout.breakpoint-scale"}),
+        ("responsive-onscale.html", set()),
+        ("interactive-no-focus.html", {"interaction.focus-visible"}),
+        ("interactive-linked.html", set()),
+        ("focus-removed.html", {"interaction.focus-outline-removed"}),
+        ("focus-replaced.html", set()),
+        ("published-no-og.html", {"artifact.social-meta"}),
+        ("published-complete.html", set()),
     ],
 )
 def test_noncompliant_fixture_triggers_exactly(fixture, expected, fixtures_dir, registry, lint):
@@ -126,3 +136,32 @@ def test_the_shipped_token_sheet_has_no_unservable_face(registry, lint):
     )
     _, triggered = lint(sheet, registry)
     assert "typography.display.no-unservable-face" not in triggered
+
+
+def test_published_page_reports_missing_meta_and_a_wrong_image_size(fixtures_dir, registry, lint):
+    """Both halves of the rule fire: what is missing, and a declared size off digital.og."""
+    report, _ = lint(fixtures_dir / "published-no-og.html", registry)
+    observed = sorted(f.observed for f in report.findings if f.rule == "artifact.social-meta")
+    assert observed == ["missing og:image, <link rel=\"icon\">", "og:image declared 1080x1080"]
+
+
+def test_social_meta_is_opt_in(fixtures_dir, registry, lint):
+    """A mock-up is not a published page: under web.new the rule is not even evaluated."""
+    report, triggered = lint(fixtures_dir / "published-no-og.html", registry, scope="web.new")
+    assert "artifact.social-meta" not in triggered
+    assert "artifact.social-meta" in report.rules_skipped
+
+
+def test_breakpoints_are_demoted_on_a_slide_replica(fixtures_dir, registry, lint):
+    """A deck replica keeps its stage breakpoints; the observation stays, the alarm drops."""
+    report, _ = lint(fixtures_dir / "responsive-offscale.html", registry, scope="web.deck-derived")
+    found = [f for f in report.findings if f.rule == "layout.breakpoint-scale"]
+    assert [f.severity for f in found] == ["note"]
+
+
+def test_breakpoint_finding_is_aggregated(fixtures_dir, registry, lint):
+    """Two invented breakpoints are one decision about the layout, not two defects."""
+    report, _ = lint(fixtures_dir / "responsive-offscale.html", registry)
+    found = [f for f in report.findings if f.rule == "layout.breakpoint-scale"]
+    assert len(found) == 1
+    assert found[0].locus == "2 media queries"
