@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILL_DIR = ROOT / "skills" / "kosmos-design-system"
+SKILL_DIR = ROOT / "skills" / "kunumi-design-system"
 
 
 def build_standalone_bundle(destination: Path) -> None:
