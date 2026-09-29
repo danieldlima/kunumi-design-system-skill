@@ -27,15 +27,67 @@ skills/
       logo-governance.md      # clear space, minimum size, co-branding, misuse
       brand-voice.md          # messages, tone axes, DOs/DON'Ts, naming
       visual-behavior.md      # brand architecture, formats, Versus symbol
-    scripts/                  # kunumi_lookup.py and the index builder
+      design-rules.json       # rule and scope definitions for the review engine
+    scripts/                  # kunumi_lookup.py, the index builder, and the review engine
+      kunumi_critic.py        # rules | lint | render | review | decisions
+      kunumi_design/          # findings, rules, scan, render, checks, adapters
+    decisions/                # design decision log (precedent the designer reads and appends to)
     assets/local/             # marks, Figtree, Space Grotesk, Instituto artwork
     assets/web/               # CSS tokens and animated template preview
+  kosmos-designer/
+    SKILL.md                  # the loop: propose, render, lint, look, correct, record
+    references/
+      design-loop.md          # the nine steps
+      critique-checklist.md   # the questions no linter can answer
 scripts/
   validate-skills.py          # frontmatter, reference links, token consistency
   build_bundle.py             # self-contained bundle for publishing
+tests/                        # pytest; fixtures are deliberately non-compliant artifacts
 ```
 
 `skills/` at the plugin root is auto-discovered by Claude Code — the manifest carries no skill path.
+
+## Reviewing an artifact
+
+The brand rules are enforced, not only described. One entry point:
+
+From a clone:
+
+```bash
+CRITIC=skills/kosmos-design-system/scripts/kunumi_critic.py
+
+python3 $CRITIC review artifact.html --canvas 1920x1080  # render + lint + hand off to the eye
+python3 $CRITIC lint   artifact.html --json              # static pass only
+python3 $CRITIC rules  --scope web.new                   # what is enforced, and on whose authority
+python3 $CRITIC render artifact.html --probe             # is a render engine available?
+python3 $CRITIC decisions --search gradient              # what was already decided
+```
+
+From an installed skill, in any project. `find -L` is required, because a local-dev install
+symlinks the skill package and `find` does not follow symlinks by default:
+
+```bash
+KOSMOS=$(dirname "$(find -L ~/.claude/skills ~/.claude/plugins/cache \
+  -maxdepth 7 -name kunumi_critic.py 2>/dev/null | head -1)")
+python3 "$KOSMOS/kunumi_critic.py" review artifact.html
+```
+
+Four severities. `blocker` and `violation` fail the run (exit 2 and 1); `advisory` and `note` do
+not. `note` exists so the linter can surface a documented tension without crying wolf — the
+failure mode that gets a linter muted.
+
+Rules that can be derived from `references/tokens.json` are derived from it, so changing a token
+changes the rule. Rules whose authority is prose live in `references/design-rules.json` as data.
+Every finding cites the reference file and anchor it came from.
+
+**Rendering is optional.** With no engine reachable, `lint` still runs and reports the
+measurement rules as skipped rather than passing them by default — `rulesSkipped` is in every
+report, so silence stays auditable. The engine is found in this order: an importable `playwright`,
+then `KUNUMI_RENDER_CMD`, then `uv run --with playwright`, then an installed Chrome or Edge.
+
+```bash
+uv sync --group dev && uv run pytest
+```
 
 ## What Works Offline
 
@@ -56,8 +108,10 @@ so the skill can specify slide work precisely before a deck is supplied.
 
 **PP Neue Machina Inktrap**, the brandbook's first-choice display face, is commercial software from
 Pangram Pangram and is not redistributed here. Space Grotesk — the alternate the brandbook itself
-names — is bundled under the SIL OFL and is the offline default. If PP Neue Machina is licensed and
-installed locally, the CSS display stack picks it up automatically.
+names — is bundled under the SIL OFL and is **the display face for every web artifact**. PP Neue
+Machina is deliberately absent from the CSS stack: it can never be served to a browser, and leaving
+it in meant a machine with a local copy rendered titles in a face the delivered page could not use.
+See ADR 0015.
 
 Two chapters of the brandbook, the Instituto and Colab deep dives, were not reachable through the
 Figma MCP page enumeration and are therefore not extracted. **Kunumi Colab** consequently has a
@@ -70,14 +124,17 @@ to trigger.
 
 ### Local development
 
-Symlink the **skill package**, not the repository root, so the personal skill directory contains
-`SKILL.md` directly:
+Symlink each **skill package**, not the repository root, so every personal skill directory
+contains `SKILL.md` directly:
 
 ```bash
 ln -s "$PWD/skills/kosmos-design-system" ~/.claude/skills/kosmos-design-system
+ln -s "$PWD/skills/kosmos-designer"      ~/.claude/skills/kosmos-designer
 ```
 
-The link points at the working tree, so edits take effect in the next session with no reinstall.
+The links point at the working tree, so edits take effect in the next session with no reinstall.
+Both are needed: `kosmos-designer` reaches the review engine through a sibling path that resolves
+correctly under either install route.
 Verify the link resolves:
 
 ```bash

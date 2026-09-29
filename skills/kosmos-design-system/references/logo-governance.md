@@ -48,6 +48,10 @@ arrow on the page is vertical and brackets the lockup's height, not its width.
 This figure is printed for the **positive RGB version**. The brandbook says limits are defined
 "para cada versão" but prints only this one — do not extrapolate a number for another version.
 
+On screen, X is one third of the rendered lockup height (the lockup is 3X tall), so at the 28px
+minimum the clear space is 9.33px per side. `web-specs.md#the-mark-on-screen` tabulates the common
+heights. The favicon and app icons are resampled from the symbol, whose own minimum is not printed.
+
 > "Em suportes e materiais variados como embalagens, etiquetas adesivas, brindes, sinalização,
 > plotagens, estampas têxteis, bordados, gravação a laser e serigrafia, as medidas mínimas devem
 > ser analisadas e testadas por meio de protótipos."

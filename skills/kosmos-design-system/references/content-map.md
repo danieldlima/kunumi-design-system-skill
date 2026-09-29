@@ -42,10 +42,28 @@ assets/local/
 
 assets/web/
 ├── kunumi-tokens.css
-├── template-preview.html
-├── template-preview.png
-└── template-preview-instituto.png
+├── template-preview.html              ← contact sheet, 4 frames, authoring medium
+├── template-preview.render.json       ← measured geometry of the last render
+├── template-preview-kunumi-capa.png
+├── template-preview-kunumi-dados.png
+├── template-preview-instituto-gradiente.png
+└── template-preview-instituto-pixels.png
 ```
+
+The four PNGs are **generated**, one per `data-kunumi-frame`, and must never be replaced by a
+screenshot:
+
+```bash
+kunumi_critic.py render assets/web/template-preview.html \
+  --canvas 2048x1200 --scale 2 --reduced-motion --out-dir assets/web
+```
+
+`--out-dir` matters: without it the PNGs and `template-preview.render.json` land in a temp
+directory, and the committed record then claims files that are not the committed ones.
+`artifact.unprovenanced` checks exactly that claim.
+
+The canvas is wider than the 1920 stage to leave room for the viewer padding; each frame still
+captures at exactly 1920x1080, delivered at 2x. See ADR 0016.
 
 No slide deck is bundled. Ask the user for the approved Kunumi or Instituto source deck before
 building slides, and use `references/slide-layouts.md` to identify the exact source layout to

@@ -1,0 +1,28 @@
+[project]
+name = "kosmos-design-system-skill"
+version = "0.1.0"
+description = "Kunumi identity and design system skill for Claude Code, with a deterministic artifact review engine."
+requires-python = ">=3.11"
+
+# Intentionally empty, and load-bearing. Everything a marketplace user invokes -
+# kunumi_lookup.py, build_indices.py, and kunumi_critic.py rules|lint|decisions - runs on the
+# standard library alone. The headless browser is confined to the optional `render` extra so a
+# missing Chromium degrades one subcommand instead of breaking the skill.
+dependencies = []
+
+[project.optional-dependencies]
+render = ["playwright>=1.44"]
+
+[dependency-groups]
+dev = ["pytest>=8", "playwright>=1.44"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

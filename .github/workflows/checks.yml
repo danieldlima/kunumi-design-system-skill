@@ -1,0 +1,40 @@
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dev dependencies
+        run: uv sync --group dev
+
+      # The skill's own runtime is stdlib only, so these two run on bare python: if they ever
+      # need a dependency, that is the signal something moved to the wrong side of the line.
+      - name: Validate the skill packages
+        run: python scripts/validate-skills.py
+
+      - name: Check the generated indexes are current
+        run: python skills/kosmos-design-system/scripts/build_indices.py --check
+
+      - name: Install Chromium for the render tests
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run the test suite
+        run: uv run pytest
+
+      # The ratchet. Today the repository's own artifacts carry no blockers, so this threshold
+      # holds. Tightening it to --severity-min violation is a one-word diff, and should happen
+      # once decision 0002 resolves the tokens.json leading tension.
+      - name: Lint the repository's own artifacts
+        run: |
+          python skills/kosmos-design-system/scripts/kunumi_critic.py \
+            lint skills/kosmos-design-system/assets/web --severity-min blocker

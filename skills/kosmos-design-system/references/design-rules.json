@@ -1,0 +1,327 @@
+{
+  "schema": "kunumi.design-rules/v1",
+  "schemaVersion": 1,
+  "source": "Brandbook Kunumi Final (2025), plus the product-layer references named per rule",
+  "notes": [
+    "Values, severities and authority strings live here. The mechanism that finds them lives in kunumi_design/checks/. A rule must never be implemented as a branch on its own id.",
+    "Rules whose values are already structured in tokens.json are derived in rules.py and carry no params here.",
+    "Scope is how documented tensions stay legible without muting the linter. Prefer demote over relax: demoting keeps the observation and drops only the alarm.",
+    "Web only. Print rules (MDC margins, non-ISO mm formats, CMYK/Pantone, the 10mm minimum) are deliberately absent and must not be added here."
+  ],
+  "scopes": {
+    "web.new": {
+      "label": "New web, app or UI work under the 2025 brandbook",
+      "inherits": []
+    },
+    "web.published": {
+      "label": "A page that ships to a public URL",
+      "inherits": ["web.new"],
+      "adds": ["artifact.social-meta"],
+      "why": "web-specs.md#digital-formats: a published page is shared, and a share without og:image and a favicon renders as a bare link. Adds a rule; relaxes nothing.",
+      "detect": ["attr:data-kunumi-scope=web.published"]
+    },
+    "web.deck-derived": {
+      "label": "Web replica of a source slide deck",
+      "inherits": ["web.new"],
+      "demote": {
+        "typography.display.case": "note",
+        "typography.line-height.display": "note",
+        "layout.breakpoint-scale": "note"
+      },
+      "why": "template-design-system.md: editing an existing deck preserves the inherited Figtree type, and slide-index.json template.sourceFonts lists Arial. The decks predate the 2025 brandbook. A slide replica keeps the stage's own breakpoints, which are not the web layout's (decision 0029).",
+      "detect": ["attr:data-kunumi-scope=web.deck-derived"]
+    },
+    "web.chart": {
+      "label": "Data visualisation",
+      "inherits": ["web.new"],
+      "relax": ["color.chart.data-only"],
+      "why": "tokens.json color.chart.role: the palette was developed exclusively for data representation, so inside a chart it is the correct choice rather than a misuse."
+    },
+    "web.instituto": {
+      "label": "Instituto Kunumi work using the signature gradient",
+      "inherits": ["web.new"],
+      "relax": ["color.prohibition.black"],
+      "why": "tokens.json color.prohibition.institutoGradientException and color.instituto.blackException: #000000 is a sanctioned terminus of the Instituto gradient."
+    },
+    "web.profile-photo": {
+      "label": "Channel profile portrait using the approved exact combinations",
+      "inherits": ["web.new"],
+      "relax": ["color.prohibition.black", "color.prohibition.white", "color.palette.unapproved"],
+      "why": "profile-photo-system.md prints twelve exact background/shirt/mark triplets that legitimately use #000000 and #FFFFFF. They are explicitly carved out of the prohibition and explicitly not transferable to any other artifact.",
+      "detect": ["path:*profile-photo*"]
+    },
+    "web.ksequence": {
+      "label": "Work derived from the extracted Ksequence visual reference",
+      "inherits": ["web.new"],
+      "demote": {
+        "color.palette.unapproved": "note",
+        "color.prefer-semantic-token": "note"
+      },
+      "why": "visual-patterns.md is labelled 'Extracted visual reference; not a replacement for approved brand foundations' and carries its own non-brandbook palette.",
+      "detect": ["path:*visual-pattern*"]
+    },
+    "exempt": {
+      "label": "Not a brand artifact - viewer chrome, scaffolding, test harness",
+      "inherits": [],
+      "relax": ["*"],
+      "why": "Explicitly marked as outside the brand surface with data-kunumi-exempt."
+    }
+  },
+  "rules": [
+    {
+      "id": "color.prohibition.black",
+      "check": "prohibited_color",
+      "severity": "blocker",
+      "params": { "target": "#000000" },
+      "authority": "tokens.json#color.prohibition + brand-foundations.md",
+      "message": "Pure black is not a Kunumi color; Chumbo replaces it.",
+      "fix": "Use --kunumi-chumbo (#1C2127). Black is permitted only as the Instituto gradient terminus, via --kunumi-instituto-black."
+    },
+    {
+      "id": "color.prohibition.white",
+      "check": "prohibited_color",
+      "severity": "violation",
+      "params": { "target": "#FFFFFF" },
+      "authority": "tokens.json#color.prohibition.observedException",
+      "message": "Pure white is not a Kunumi color; Gelo replaces it.",
+      "fix": "Use --kunumi-gelo (#F0F0F0). White is permitted only as an elevated card surface on Gelo, via --kunumi-surface-raised."
+    },
+    {
+      "id": "color.chart.data-only",
+      "check": "chart_color_misuse",
+      "severity": "blocker",
+      "params": {
+        "properties": ["background", "background-color", "border-color", "color", "fill", "outline-color"]
+      },
+      "authority": "tokens.json#color.chart.rule + medium-playbooks.md",
+      "message": "The chart palette was developed exclusively for data and must not become a UI accent or a background.",
+      "fix": "Use --kunumi-accent for emphasis, or --kunumi-ground / --kunumi-ink for surfaces. If this really is a chart, declare the web.chart scope."
+    },
+    {
+      "id": "color.superseded",
+      "check": "forbidden_colors",
+      "severity": "violation",
+      "params": { "source": "superseded" },
+      "authority": "tokens.json#color.supersededChart",
+      "message": "This hex belongs to the superseded chart palette, retained only to read older template charts.",
+      "fix": "Use the five current chart colors from color.chart."
+    },
+    {
+      "id": "color.palette.unapproved",
+      "check": "unapproved_color",
+      "severity": "advisory",
+      "authority": "tokens.json#color.institutional + brand-foundations.md",
+      "message": "This color is not in any approved Kunumi palette.",
+      "fix": "Replace it with an approved token, or state why the artifact needs a value outside the system."
+    },
+    {
+      "id": "color.prefer-semantic-token",
+      "check": "prefer_semantic_token",
+      "severity": "advisory",
+      "authority": "medium-playbooks.md#web-apps-and-ui",
+      "message": "An approved color is written as a literal where a semantic token exists.",
+      "fix": "Reference the semantic token so the artifact follows theme switching."
+    },
+    {
+      "id": "typography.display.case",
+      "check": "display_case",
+      "severity": "violation",
+      "authority": "tokens.json#typography.display.rule + typography.md",
+      "message": "The display face is titles only, and titles are always uppercase.",
+      "fix": "Add text-transform: uppercase, or set this text in Figtree if it is body copy."
+    },
+    {
+      "id": "typography.display.tracking",
+      "check": "display_tracking",
+      "severity": "violation",
+      "authority": "tokens.json#typography.display.letterSpacingPercent",
+      "message": "Display type is tracked +3%.",
+      "fix": "Use letter-spacing: var(--kunumi-track-display), which is 0.03em."
+    },
+    {
+      "id": "typography.display.long-title",
+      "check": "long_title_face",
+      "severity": "violation",
+      "params": {
+        "maxLines": 2,
+        "exemptRoles": [
+          "statement"
+        ]
+      },
+      "requires": [
+        "render"
+      ],
+      "authority": "tokens.json#typography.display.longTitle + typography.md#the-long-title-exception + decisions/0018",
+      "message": "A title past two rendered lines is set in the display face, where uppercase and +3% tracking stop helping.",
+      "fix": "Set this title in Figtree SemiBold, sentence case, tracking 0 - or cut it to two lines and keep the display face."
+    },
+    {
+      "id": "typography.negative-tracking",
+      "check": "negative_tracking",
+      "severity": "blocker",
+      "authority": "typography.md + tokens.json#typography.display",
+      "message": "Negative letter-spacing contradicts the brandbook, which tracks the display face positively.",
+      "fix": "Remove the negative tracking; use var(--kunumi-track-display) for titles and 0 for body."
+    },
+    {
+      "id": "typography.display.no-arial",
+      "check": "family_stack_forbids",
+      "severity": "blocker",
+      "params": { "role": "display", "forbidden": ["arial", "helvetica"] },
+      "authority": "typography.md + tokens.json#typography.display.fallbackOrder",
+      "message": "Arial is a body fallback only and must never appear in a display stack.",
+      "fix": "Use the declared display fallback order: Space Grotesk, then Figtree SemiBold uppercase."
+    },
+    {
+      "id": "typography.display.no-unservable-face",
+      "check": "family_stack_forbids",
+      "severity": "violation",
+      "params": {
+        "role": "display",
+        "forbidden": [
+          "pp neue machina"
+        ]
+      },
+      "authority": "tokens.json#typography.display.webDelivery + AGENTS.md",
+      "message": "PP Neue Machina cannot be served to a browser, so naming it in a web display stack makes the render depend on which machine produced it.",
+      "fix": "Drop PP Neue Machina from the stack and let Space Grotesk lead. It is the brandbook's own stated alternate and is bundled under the SIL OFL."
+    },
+    {
+      "id": "typography.line-height.display",
+      "check": "line_height_range",
+      "severity": "violation",
+      "params": { "role": "display" },
+      "authority": "tokens.json#typography.lineHeightRanges.display",
+      "message": "Display leading sits outside the brandbook range.",
+      "fix": "Bring the leading inside 110%-140%."
+    },
+    {
+      "id": "typography.line-height.body",
+      "check": "line_height_range",
+      "severity": "violation",
+      "params": { "role": "body" },
+      "authority": "tokens.json#typography.lineHeightRanges.body",
+      "message": "Body leading sits outside the brandbook range.",
+      "fix": "Bring the leading inside 140%-175%; use var(--kunumi-leading-body)."
+    },
+    {
+      "id": "geometry.radius",
+      "check": "radius_allowed",
+      "severity": "violation",
+      "authority": "tokens.json#geometry.radius",
+      "message": "Only the 10px card radius and the 4px control radius are sanctioned.",
+      "fix": "Use var(--kunumi-radius-card) or var(--kunumi-radius-sm). Hairlines and edge alignment remain the dominant language."
+    },
+    {
+      "id": "geometry.spacing-scale",
+      "check": "spacing_scale",
+      "severity": "advisory",
+      "params": {
+        "properties": ["gap", "row-gap", "column-gap", "padding", "margin",
+                       "padding-top", "padding-right", "padding-bottom", "padding-left",
+                       "margin-top", "margin-right", "margin-bottom", "margin-left"]
+      },
+      "authority": "tokens.json#geometry.spacing",
+      "message": "This spacing value is off the 4px product scale.",
+      "fix": "Use a --kunumi-space-* token. The brandbook's own 30px card padding and gap are exempt: use --kunumi-card-padding and --kunumi-card-gap."
+    },
+    {
+      "id": "logo.no-effects",
+      "check": "declaration_forbidden_on_role",
+      "severity": "blocker",
+      "params": {
+        "role": "logo",
+        "properties": ["box-shadow", "text-shadow", "outline", "mix-blend-mode", "opacity"],
+        "functions": ["drop-shadow", "brightness", "invert", "hue-rotate", "grayscale", "sepia", "saturate"]
+      },
+      "authority": "logo-governance.md#the-seven-prohibitions",
+      "message": "The mark must not carry effects or be recolored.",
+      "fix": "Swap in the correct positive or negative mark file instead of filtering the mark. kunumi_lookup.py sources --identity <id> lists the approved variants."
+    },
+    {
+      "id": "logo.no-distortion",
+      "check": "non_uniform_scale",
+      "severity": "blocker",
+      "params": { "role": "logo" },
+      "authority": "logo-governance.md#the-seven-prohibitions",
+      "message": "The mark's proportions must not be altered.",
+      "fix": "Scale the mark uniformly, or set an explicit height and let the width follow."
+    },
+    {
+      "id": "motion.reduced-motion",
+      "check": "reduced_motion_present",
+      "severity": "violation",
+      "authority": "template-design-system.md#web-motion",
+      "message": "An artifact that animates must honor prefers-reduced-motion.",
+      "fix": "Add a @media (prefers-reduced-motion: reduce) block, or link kunumi-tokens.css, which already carries one."
+    },
+    {
+      "id": "artifact.format-mismatch",
+      "check": "artifact_format",
+      "severity": "blocker",
+      "authority": "medium-playbooks.md#images-social-and-motion",
+      "message": "The file extension does not match the actual encoded format.",
+      "fix": "Re-export in the declared format. Prefer supplied SVG for vector work and transparent PNG for raster."
+    },
+    {
+      "id": "artifact.unprovenanced",
+      "check": "artifact_unprovenanced",
+      "severity": "violation",
+      "authority": "SKILL.md#nonnegotiables + decisions/0016",
+      "message": "This artifact was not produced by a render, so nothing ties it to the source it claims to depict.",
+      "fix": "Generate it: kunumi_critic.py render <html> --out-dir <this directory>. Never commit a screenshot as an artifact."
+    },
+    {
+      "id": "artifact.stale",
+      "check": "artifact_stale",
+      "severity": "violation",
+      "params": { "sources": ["template-preview.html", "kunumi-tokens.css"] },
+      "authority": "SKILL.md#nonnegotiables",
+      "message": "A source this render depicts has changed since it was rendered, so it no longer shows what ships.",
+      "fix": "Re-render the artifact: kunumi_critic.py render <html> --canvas <w>x<h>."
+    },
+    {
+      "id": "logo.min-height",
+      "check": "logo_min_height",
+      "severity": "violation",
+      "params": { "measure": "lockup-height" },
+      "requires": ["render"],
+      "authority": "tokens.json#logo.minHeight + logo-governance.md#minimum-size",
+      "message": "The lockup is rendered below its 28px digital minimum.",
+      "fix": "Raise the lockup to at least 28px of rendered height, or remove the mark from this surface."
+    },
+    {
+      "id": "layout.breakpoint-scale",
+      "check": "breakpoint_scale",
+      "severity": "advisory",
+      "authority": "tokens.json#layout.breakpoints + web-specs.md#breakpoints-and-grid + decisions/0029",
+      "message": "A media query sits off the Kunumi breakpoints.",
+      "fix": "Use min-width: 768px or 1440px, mobile-first. A max-width query may sit at 767.98px. If the layout genuinely needs another step, record why in a decision."
+    },
+    {
+      "id": "interaction.focus-visible",
+      "check": "focus_visible_present",
+      "severity": "advisory",
+      "authority": "tokens.json#interaction.focusRing + web-specs.md#states + WCAG 2.2 SC 2.4.7",
+      "message": "The artifact has keyboard-reachable elements and no focus style, so it shows the browser's ring instead of the Kunumi one.",
+      "fix": "Link kunumi-tokens.css, which carries the ring, or add a :focus-visible rule with outline: var(--kunumi-focus-ring-width) solid var(--kunumi-focus-ring)."
+    },
+    {
+      "id": "interaction.focus-outline-removed",
+      "check": "focus_indicator_removed",
+      "severity": "violation",
+      "authority": "WCAG 2.2 SC 2.4.7 + tokens.json#interaction.focusRing.rule + web-specs.md#states",
+      "message": "The focus outline is removed and nothing replaces it, so keyboard users lose their place.",
+      "fix": "Delete the outline: none, or scope it to :focus:not(:focus-visible) and keep the ring on :focus-visible."
+    },
+    {
+      "id": "artifact.social-meta",
+      "check": "social_meta_present",
+      "severity": "advisory",
+      "optIn": true,
+      "authority": "tokens.json#digital.og + web-specs.md#digital-formats",
+      "message": "A published page is missing the metadata a share needs.",
+      "fix": "Add og:title, og:image (1200x630, declared with og:image:width and og:image:height) and <link rel=\"icon\">."
+    }
+  ]
+}

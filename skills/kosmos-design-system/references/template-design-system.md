@@ -66,6 +66,10 @@ identify the exact layout to duplicate.
 - local Figtree and Space Grotesk variable font faces;
 - typography weights, the 4px product spacing scale, the brandbook card geometry
   (`--kunumi-card-padding`, `--kunumi-card-gap`, `--kunumi-text-column`), timing, and
-  reduced-motion behavior.
+  reduced-motion behavior;
+- the web product layer from `web-specs.md`: tonal steps, the semantic roles and their dark
+  values (`.kunumi-theme-dark`, `.kunumi-theme-auto`), elevation, the focus ring, the
+  breakpoint grid (`.kunumi-container`, `.kunumi-grid`), and the components
+  (`.kunumi-button`, `.kunumi-icon-button`, `.kunumi-nav`, `.kunumi-icon`).
 
 Use these tokens as a foundation, then follow the target medium’s composition rules. CSS tokens do not authorize recoloring supplied logos or Instituto art.

@@ -22,13 +22,17 @@ truth for artwork.
 | Logo placement, clear space, minimum size, co-branding, misuse | `references/logo-governance.md` |
 | Copy, microcopy, naming, tone, verbal review | `references/brand-voice.md` |
 | Brand architecture, formats, margins, Versus symbol, hatching | `references/visual-behavior.md` |
-| Web, app, or UI | `references/medium-playbooks.md` + `references/typography.md` |
+| Web, app, or UI | `references/web-specs.md` + `references/medium-playbooks.md` + `references/typography.md` |
+| Breakpoints, grid, dark theme, focus and states, buttons, nav, icons, favicon, OG, social sizes | `references/web-specs.md` |
 | Slides or presentations | `references/slide-layouts.md` + `references/medium-playbooks.md` + `references/visual-patterns.md` |
+| Margins, grid, leading, box and rule geometry in px | `references/slide-template-measured.md` |
+| Diagrams, flows, timelines | `references/slide-template-measured.md` + ADRs 0005, 0008, 0011 |
 | Charts and data visualization | `references/medium-playbooks.md` |
 | Images, social, GIF, video | `references/medium-playbooks.md` + `references/visual-patterns.md` |
 | Asset, background, or motion selection | `references/content-map.md` + `references/asset-catalog.md` |
 | Kunumi/Instituto slide or web-system fidelity | `references/template-design-system.md` |
 | Profile photo, portrait, or avatar | `references/profile-photo-system.md` |
+| **Producing or reviewing a web artifact end to end** | use the **`kosmos-designer`** skill, which runs the render-and-verify loop |
 
 Do not load index JSON files wholesale. Query their compact views:
 
@@ -76,4 +80,7 @@ duplicate once a deck is supplied.
 - When a required source is missing, ask for it if identity fidelity is central. Otherwise use a
   neutral text-only treatment and state the limitation.
 - Render the final artifact and inspect every page, slide, frame, loop, breakpoint, or export at
-  delivery size.
+  delivery size. For web work this is mechanised: `scripts/kunumi_critic.py review <artifact>`
+  renders it, checks every machine-decidable rule, and hands the render back for inspection.
+  A clean lint is not a passed review. The **`kosmos-designer`** skill carries the full loop and
+  resolves the script path for you.
