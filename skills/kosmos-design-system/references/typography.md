@@ -170,6 +170,10 @@ custom color with transparency. On the web, use a real background on an inline s
 `--kunumi-font-display`, `--kunumi-font`, the `--kunumi-text-*` size ramp, and the matching
 tracking and line-height tokens. Prefer the tokens over literal values.
 
+The display, category and body classes scale fluidly with the viewport and reach the stage size
+only at wide viewports. `web-specs.md#fluid-type-and-the-product-ramp` lists the clamps and the
+status of the product ramp for dense views (decisions 0019 and 0034).
+
 Because the display face is tracked **positive** and set uppercase, never carry over the tight
 negative tracking common in display type. Any earlier Kunumi CSS using a negative
 `letter-spacing` on a display heading is wrong against this brandbook.

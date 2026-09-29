@@ -88,8 +88,29 @@ the loop cannot be skipped.
 20. **Is there a reduced-motion path, and does the artifact still work under it?**
     Re-render with `--reduced-motion`. Fails when content depends on animation to be legible.
 
+## States and responsive, for pages and UI
+
+Skip for a slide-shaped or single-format surface. `web-specs.md` in the sibling
+`kosmos-design-system` package holds every value these questions check against.
+
+21. **Does every interactive element show the focus ring?**
+    Render once with focus on the first control, or tab through the page. Fails on any control
+    whose focused state is indistinguishable from its resting one.
+22. **Does the layout hold at 375, 768 and 1440?**
+    Fails on horizontal scroll at 375, on columns that do not change at the two breakpoints, or
+    on a title that breaks mid-word at the narrow width.
+23. **Does the dark render flip only roles?**
+    Render once under `.kunumi-theme-dark`. Fails on any surface still Gelo, any text still
+    Chumbo, or small accent text sitting on the dark raised surface.
+24. **Is disabled readable as disabled without its colour?**
+    Fails when only the tint changed.
+25. **Are primary touch targets at least 44px?**
+    Fails on an xs or sm icon button used as the main action on a touch surface.
+26. **Is the favicon or OG image legible at its delivery size?**
+    Check the favicon at 32px on light and dark tabs, and the OG image as a feed thumbnail.
+
 ## Honesty
 
-21. **Can you state what is still wrong?**
+27. **Can you state what is still wrong?**
     An artifact with no remaining compromise is rare. Naming the compromise is the answer; having
     none and saying so without having looked is the failure.

@@ -87,6 +87,9 @@ Use flat lines and fills by default. Instituto artwork may frame a chart, but do
 
 ## Web, Apps, and UI
 
+Breakpoints, grid, themes, states, components, icons and the digital formats are specified in
+`web-specs.md`. The points below are the brand judgement that sits on top of them.
+
 - Titles in the display face, uppercase, tracked +3%. Body in Figtree at 140-175% line height,
   tracking 0. Arial is a body fallback only, never display. See `typography.md`.
 - Default to a Gelo ground with Chumbo text and selective Urucum actions or emphasis. White is
@@ -109,7 +112,8 @@ Use flat lines and fills by default. Instituto artwork may frame a chart, but do
 2. Choose a supplied background or a restrained Gelo/White composition.
 3. Establish one focal image, one headline, and one brand signature.
 4. Keep essential copy away from crops, busy artwork, and platform safe-zone edges.
-5. Use the 1584×396 LinkedIn header template as supplied for that channel.
+5. Use the 1584×396 LinkedIn header template as supplied for that channel. Other channel sizes,
+   the OG image and favicons are in `web-specs.md#digital-formats`.
 6. For portraits or avatars, use `profile-photo-system.md` and its exact color combinations.
 7. Export at the requested pixel dimensions and inspect at 100% plus a typical feed/profile size.
 

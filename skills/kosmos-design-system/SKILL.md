@@ -22,7 +22,8 @@ truth for artwork.
 | Logo placement, clear space, minimum size, co-branding, misuse | `references/logo-governance.md` |
 | Copy, microcopy, naming, tone, verbal review | `references/brand-voice.md` |
 | Brand architecture, formats, margins, Versus symbol, hatching | `references/visual-behavior.md` |
-| Web, app, or UI | `references/medium-playbooks.md` + `references/typography.md` |
+| Web, app, or UI | `references/web-specs.md` + `references/medium-playbooks.md` + `references/typography.md` |
+| Breakpoints, grid, dark theme, focus and states, buttons, nav, icons, favicon, OG, social sizes | `references/web-specs.md` |
 | Slides or presentations | `references/slide-layouts.md` + `references/medium-playbooks.md` + `references/visual-patterns.md` |
 | Margins, grid, leading, box and rule geometry in px | `references/slide-template-measured.md` |
 | Diagrams, flows, timelines | `references/slide-template-measured.md` + ADRs 0005, 0008, 0011 |

@@ -127,7 +127,9 @@ Full governance, the co-branding rule, photo application, and the seven prohibit
 ## Composition
 
 - Strong left-aligned hierarchy on a Gelo ground with generous empty space.
-- Two-by-two grid: two major horizontal blocks, two major vertical blocks, then subdivide.
+- Two-by-two grid: two major horizontal blocks, two major vertical blocks, then subdivide. On the
+  web it is read onto the column grid in `web-specs.md`, which also holds the product-layer
+  tonal steps and theme roles. None of those is a brand colour.
 - Hairline rules and precise edge alignment over rounded-card UI chrome. When a card is genuinely
   warranted, the brandbook radius is **10 px**.
 - One narrative job, one dominant message, one reading order per page, slide, or view.

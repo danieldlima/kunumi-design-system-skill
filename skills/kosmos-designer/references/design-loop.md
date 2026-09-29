@@ -36,7 +36,8 @@ State four things out loud before writing anything:
 - **Scope** — `web.new` unless a documented tension applies. `python3 "$KOSMOS/kunumi_critic.py" rules --scope <s>`
   shows what each scope enforces and why it relaxes what it relaxes.
 - **Canvas** — the delivery size. `1920x1080` for a slide-shaped surface, `1584x396` for a
-  LinkedIn header, a real viewport for a page.
+  LinkedIn header, the channel size from `web-specs.md#social-formats` for any other social asset.
+  A page has three: `375x812`, `768x1024` and `1440x900`, one per side of each breakpoint.
 - **Media** — HTML, PNG, Penpot, or several.
 
 ## 2. Propose
@@ -69,6 +70,10 @@ PNG is rendered from it and a Penpot proposal is derived from it.
 ```bash
 python3 "$KOSMOS/kunumi_critic.py" render "$HTML" --canvas 1920x1080 --scale 2 --reduced-motion
 ```
+
+A page renders once per canvas from step 1. If it links `kunumi-tokens.css` and offers dark mode,
+render a copy with `.kunumi-theme-dark` on `<html>` as well. That checks the same roles
+`.kunumi-theme-auto` switches to.
 
 If `kunumi_critic.py render --probe` reports no engine, continue to step 4 and carry the limitation through to
 step 7. Do not pretend the render happened.
