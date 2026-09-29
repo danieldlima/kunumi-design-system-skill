@@ -5,9 +5,11 @@
  * Two families, two jobs: the display face is for TITLES ONLY, always uppercase, tracked +3%.
  * Figtree carries body and subtitles at 0 tracking. See references/typography.md.
  *
- * PP Neue Machina Inktrap is commercial (Pangram Pangram) and is NOT bundled. It is named first
- * in the display stack so it is picked up when installed locally; Space Grotesk (OFL, bundled)
- * is the offline default.
+ * PP Neue Machina Inktrap is commercial (Pangram Pangram), is NOT bundled, and is deliberately
+ * absent from the display stack (ADR 0015). Space Grotesk (OFL, bundled) leads it.
+ *
+ * Everything the brandbook does not print for screens - tonal steps, themes, breakpoints, grid,
+ * elevation, focus, components - is a labelled product layer. See references/web-specs.md.
  */
 
 @font-face {
@@ -49,13 +51,42 @@
      ONLY sanctioned use of white: never a page ground, never a text color. */
   --kunumi-surface-raised: #ffffff;
 
+  /* ---- Product tonal steps ---------------------------------------------------------------- */
+  /* Product layer, from the Kosmos Figma Primitives. Paint with a semantic role, never with
+     these directly: they exist so the roles below can flip between themes. */
+  --kunumi-urucum-300: #f47d75;
+  --kunumi-urucum-400: #f26058;
+  --kunumi-urucum-600: #d7423a;
+  --kunumi-urucum-700: #bc392f;
+  --kunumi-neutral-200: #e1e1de;
+  --kunumi-neutral-300: #c9c7c1;
+  --kunumi-neutral-400: #9a9a97;
+  --kunumi-neutral-700: #363940;
+  --kunumi-neutral-800: #262b31;
+
   /* ---- Semantic roles ------------------------------------------------------------------- */
+  /* Light values. The dark values live in .kunumi-theme-dark and .kunumi-theme-auto below;
+     tokens.json color.semantic.roles is the source of both. */
   --kunumi-ground: var(--kunumi-gelo);
   --kunumi-ink: var(--kunumi-chumbo);
   --kunumi-ink-muted: var(--kunumi-grafite);
   --kunumi-border: var(--kunumi-concreto);
+  --kunumi-border-subtle: color-mix(in srgb, var(--kunumi-chumbo) 14%, transparent);
+  --kunumi-hairline: color-mix(in srgb, var(--kunumi-chumbo) 8%, transparent);
   --kunumi-accent: var(--kunumi-urucum);
-  --kunumi-on-accent: var(--kunumi-gelo);
+  --kunumi-accent-hover: var(--kunumi-urucum-600);
+  --kunumi-accent-press: var(--kunumi-urucum-700);
+  /* Proposed (ADR 0031): Urucum that clears 4.5:1 on Gelo for small text. */
+  --kunumi-accent-text: var(--kunumi-urucum-700);
+  /* Chumbo, not Gelo, on an Urucum fill: 4.53:1 against 3.13:1 (ADR 0032). */
+  --kunumi-on-accent: var(--kunumi-chumbo);
+  /* A Chumbo label needs a lighter fill on hover, not a darker one (ADR 0032). */
+  --kunumi-accent-fill-hover: var(--kunumi-urucum-400);
+  --kunumi-accent-fill-press: var(--kunumi-urucum-300);
+  --kunumi-ink-hover: var(--kunumi-neutral-700);
+  --kunumi-focus-ring: var(--kunumi-urucum);
+  --kunumi-surface-disabled: var(--kunumi-neutral-200);
+  --kunumi-ink-disabled: var(--kunumi-neutral-400);
 
   /* ---- Chart palette (PALETA PARA GRÁFICOS) --------------------------------------------- */
   /* Data representation only. Not UI accents, not backgrounds, not brand colors. */
@@ -174,6 +205,41 @@
   --kunumi-fast: 180ms;
   --kunumi-base: 480ms;
   --kunumi-slow: 1200ms;
+
+  /* ---- Elevation, focus, layout (product layer) -------------------------------------------- */
+  /* Hairlines stay the dominant language; elevation only where it clarifies hierarchy. */
+  --kunumi-elevation-card:
+    0 1px 2px color-mix(in srgb, var(--kunumi-chumbo) 6%, transparent),
+    0 2px 8px color-mix(in srgb, var(--kunumi-chumbo) 8%, transparent);
+  --kunumi-elevation-overlay:
+    0 2px 6px color-mix(in srgb, var(--kunumi-chumbo) 8%, transparent),
+    0 12px 32px color-mix(in srgb, var(--kunumi-chumbo) 16%, transparent);
+
+  --kunumi-focus-ring-width: 2px;
+  --kunumi-focus-ring-offset: 2px;
+
+  /* Mobile-first grid: 4 columns here, 8 from 768px, 12 from 1440px. Custom properties cannot
+     sit inside @media, so the two breakpoints are written as literals below. */
+  --kunumi-grid-columns: 4;
+  --kunumi-grid-gutter: var(--kunumi-space-4);
+  --kunumi-page-margin: var(--kunumi-space-6);
+  --kunumi-container: 78rem; /* 1248 = 1440 - 2 x 96 */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --kunumi-grid-columns: 8;
+    --kunumi-grid-gutter: var(--kunumi-space-6);
+    --kunumi-page-margin: var(--kunumi-space-12);
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --kunumi-grid-columns: 12;
+    --kunumi-grid-gutter: var(--kunumi-space-6);
+    --kunumi-page-margin: var(--kunumi-space-24);
+  }
 }
 
 * {
@@ -191,13 +257,73 @@ body {
   font-family: inherit;
 }
 
+/* Dark theme. Only semantic roles flip (ADR 0007). Opt-in either way (ADR 0030):
+   .kunumi-theme-dark forces it; .kunumi-theme-auto follows the system. The two role blocks must
+   stay identical - validate-skills.py compares them with tokens.json color.semantic.roles. */
 .kunumi-theme-dark {
+  color-scheme: dark;
   --kunumi-ground: var(--kunumi-chumbo);
   --kunumi-ink: var(--kunumi-gelo);
-  --kunumi-ink-muted: color-mix(in srgb, var(--kunumi-gelo) 72%, transparent);
-  --kunumi-surface-raised: color-mix(in srgb, var(--kunumi-gelo) 8%, var(--kunumi-chumbo));
+  --kunumi-ink-muted: var(--kunumi-neutral-300);
+  --kunumi-border: color-mix(in srgb, var(--kunumi-gelo) 28%, transparent);
+  --kunumi-border-subtle: color-mix(in srgb, var(--kunumi-gelo) 16%, transparent);
+  --kunumi-hairline: color-mix(in srgb, var(--kunumi-gelo) 10%, transparent);
+  --kunumi-surface-raised: var(--kunumi-neutral-800);
+  --kunumi-accent-hover: var(--kunumi-urucum-400);
+  --kunumi-accent-press: var(--kunumi-urucum-300);
+  --kunumi-accent-text: var(--kunumi-urucum-400);
+  --kunumi-ink-hover: var(--kunumi-neutral-200);
+  --kunumi-focus-ring: var(--kunumi-urucum-400);
+  --kunumi-surface-disabled: var(--kunumi-neutral-800);
   color: var(--kunumi-ink);
   background: var(--kunumi-ground);
+}
+
+.kunumi-theme-auto {
+  color-scheme: light dark;
+  color: var(--kunumi-ink);
+  background: var(--kunumi-ground);
+}
+
+@media (prefers-color-scheme: dark) {
+  .kunumi-theme-auto {
+    --kunumi-ground: var(--kunumi-chumbo);
+    --kunumi-ink: var(--kunumi-gelo);
+    --kunumi-ink-muted: var(--kunumi-neutral-300);
+    --kunumi-border: color-mix(in srgb, var(--kunumi-gelo) 28%, transparent);
+    --kunumi-border-subtle: color-mix(in srgb, var(--kunumi-gelo) 16%, transparent);
+    --kunumi-hairline: color-mix(in srgb, var(--kunumi-gelo) 10%, transparent);
+    --kunumi-surface-raised: var(--kunumi-neutral-800);
+    --kunumi-accent-hover: var(--kunumi-urucum-400);
+    --kunumi-accent-press: var(--kunumi-urucum-300);
+    --kunumi-accent-text: var(--kunumi-urucum-400);
+    --kunumi-ink-hover: var(--kunumi-neutral-200);
+    --kunumi-focus-ring: var(--kunumi-urucum-400);
+    --kunumi-surface-disabled: var(--kunumi-neutral-800);
+  }
+}
+
+/* ---- Focus ------------------------------------------------------------------------------- */
+/* One ring for every interactive element, drawn on the element and never on a mark inside it.
+   Removing an outline on :focus without drawing a replacement is a violation
+   (interaction.focus-outline-removed). */
+:where(a[href], button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--kunumi-focus-ring-width) solid var(--kunumi-focus-ring);
+  outline-offset: var(--kunumi-focus-ring-offset);
+}
+
+/* ---- Layout ------------------------------------------------------------------------------ */
+.kunumi-container {
+  width: 100%;
+  max-width: calc(var(--kunumi-container) + 2 * var(--kunumi-page-margin));
+  margin-inline: auto;
+  padding-inline: var(--kunumi-page-margin);
+}
+
+.kunumi-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--kunumi-grid-columns), minmax(0, 1fr));
+  column-gap: var(--kunumi-grid-gutter);
 }
 
 /* ---- Type primitives ------------------------------------------------------------------- */
@@ -317,6 +443,186 @@ body {
     var(--kunumi-magenta) 48% 72%,
     var(--kunumi-urucum) 72% 100%
   );
+}
+
+/* ---- Components (product layer) ---------------------------------------------------------- */
+/* From the Kosmos Figma Button: radius is the brandbook card radius, label is Figtree Medium.
+   Heights 28 / 32 / 40 / 44; Figma's 38px default is rounded to the 4px scale (tokens.json
+   components.button.sizesNote). */
+.kunumi-button,
+.kunumi-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kunumi-space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--kunumi-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--kunumi-radius-card);
+  background: var(--kunumi-accent);
+  color: var(--kunumi-on-accent);
+  font-family: var(--kunumi-font);
+  font-size: 0.875rem;
+  font-weight: var(--kunumi-weight-medium);
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--kunumi-fast) var(--kunumi-ease),
+    border-color var(--kunumi-fast) var(--kunumi-ease),
+    color var(--kunumi-fast) var(--kunumi-ease);
+}
+
+.kunumi-button:hover,
+.kunumi-icon-button:hover {
+  background: var(--kunumi-accent-fill-hover);
+}
+
+.kunumi-button:active,
+.kunumi-icon-button:active {
+  background: var(--kunumi-accent-fill-press);
+}
+
+.kunumi-button--secondary {
+  background: var(--kunumi-ink);
+  color: var(--kunumi-ground);
+}
+
+.kunumi-button--secondary:hover {
+  background: var(--kunumi-ink-hover);
+}
+
+.kunumi-button--secondary:active {
+  background: var(--kunumi-ink);
+}
+
+.kunumi-button--outline,
+.kunumi-button--ghost {
+  background: transparent;
+  color: var(--kunumi-ink);
+}
+
+.kunumi-button--outline {
+  border-color: var(--kunumi-border);
+}
+
+.kunumi-button--outline:hover,
+.kunumi-button--ghost:hover {
+  background: color-mix(in srgb, var(--kunumi-ink) 8%, transparent);
+}
+
+.kunumi-button--outline:active,
+.kunumi-button--ghost:active {
+  background: color-mix(in srgb, var(--kunumi-ink) 14%, transparent);
+}
+
+.kunumi-button--xs {
+  gap: var(--kunumi-space-1);
+  min-height: 1.75rem;
+  padding: 0 var(--kunumi-space-2);
+  font-size: 0.75rem;
+}
+
+.kunumi-button--sm {
+  gap: var(--kunumi-space-1);
+  min-height: 2rem;
+  padding: 0 var(--kunumi-space-3);
+  font-size: 0.75rem;
+}
+
+.kunumi-button--lg {
+  min-height: 2.75rem;
+  padding: 0 var(--kunumi-space-6);
+  font-size: 1rem;
+}
+
+/* Square: the width follows the height of the matching size. xs and sm sit below the 44px touch
+   recommendation - pointer-dense surfaces only. */
+.kunumi-icon-button {
+  width: 2.5rem;
+  padding: 0;
+}
+
+.kunumi-icon-button.kunumi-button--xs {
+  width: 1.75rem;
+  padding: 0;
+}
+
+.kunumi-icon-button.kunumi-button--sm {
+  width: 2rem;
+  padding: 0;
+}
+
+.kunumi-icon-button.kunumi-button--lg {
+  width: 2.75rem;
+  padding: 0;
+}
+
+.kunumi-button:disabled,
+.kunumi-button[aria-disabled="true"],
+.kunumi-icon-button:disabled,
+.kunumi-icon-button[aria-disabled="true"] {
+  border-color: transparent;
+  background: var(--kunumi-surface-disabled);
+  color: var(--kunumi-ink-disabled);
+  cursor: not-allowed;
+}
+
+/* Line icons in currentColor on a 20px grid, 1.75 stroke. No approved Kunumi icon set exists. */
+.kunumi-icon {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.kunumi-button .kunumi-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.kunumi-button--xs .kunumi-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.kunumi-button--sm .kunumi-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.kunumi-button--lg .kunumi-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Navigation: items carry .kunumi-menu (Cabecalho/Menu, literal). The current page is marked by
+   an Urucum rule, not by text colour alone. */
+.kunumi-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kunumi-space-6);
+}
+
+.kunumi-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--kunumi-ink);
+  text-decoration: none;
+}
+
+.kunumi-nav a:hover {
+  color: var(--kunumi-ink-muted);
+}
+
+.kunumi-nav [aria-current="page"] {
+  box-shadow: inset 0 -2px 0 var(--kunumi-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {

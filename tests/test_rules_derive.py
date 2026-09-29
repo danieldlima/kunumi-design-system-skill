@@ -81,3 +81,46 @@ def test_instituto_gradient_keeps_its_measured_stops(tokens):
     assert stops[-1].hex == "#000000"
     urucum = next(stop for stop in stops if stop.token == "urucum")
     assert urucum.centre_percent == 35.0
+
+
+def test_breakpoints_follow_the_layout_tokens(mutable_tokens):
+    from kunumi_design import rules
+
+    mutable_tokens["layout"]["breakpoints"]["entries"].append({"token": "xl", "minWidthPx": 1920})
+    layout = rules.derive_layout(mutable_tokens)
+    assert layout.breakpoints_px == frozenset({768.0, 1440.0, 1920.0})
+    assert layout.container_px == 1248.0
+
+
+def test_semantic_vars_come_from_the_role_table(mutable_tokens):
+    """The semantic set used to be a Python literal; it is now color.semantic.roles."""
+    from kunumi_design import rules
+
+    mutable_tokens["color"]["semantic"]["roles"].append(
+        {"role": "canvas", "cssVar": "--kunumi-canvas", "light": "gelo", "dark": "chumbo"}
+    )
+    palette = rules.derive_palette(mutable_tokens)
+    assert "--kunumi-canvas" in palette.semantic_vars
+    assert "--kunumi-on-accent" in palette.semantic_vars
+
+
+def test_product_steps_are_approved_and_mapped(mutable_tokens):
+    from kunumi_design import rules
+
+    mutable_tokens["color"]["product"]["entries"].append(
+        {"token": "urucum-800", "hex": "#8F2B24", "cssVar": "--kunumi-urucum-800"}
+    )
+    palette = rules.derive_palette(mutable_tokens)
+    assert "#8F2B24" in palette.approved
+    assert palette.var_by_hex["#BC392F"] == "--kunumi-urucum-700"
+
+
+def test_logo_minimum_and_og_size_follow_the_tokens(mutable_tokens):
+    from kunumi_design import rules
+
+    mutable_tokens["logo"]["minHeight"]["positiveRgbPx"] = 32
+    mutable_tokens["digital"]["og"]["widthPx"] = 1600
+    interaction = rules.derive_interaction(mutable_tokens)
+    assert interaction.logo_min_px == 32.0
+    assert interaction.og_size_px == (1600, 630)
+    assert interaction.target_min_px == 24.0

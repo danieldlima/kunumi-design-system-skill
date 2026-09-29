@@ -75,6 +75,7 @@ class PaletteRules:
         institutional: Approved institutional hex to token name.
         instituto: Instituto gradient stop hexes.
         deck_support: Deck-only hexes, subordinate to the brandbook.
+        product: Product-layer tonal steps, admitted only as values of a semantic role.
         chart: The five chart hexes, in brandbook order.
         chart_vars: The chart custom property names.
         superseded: Hexes retired for chart work.
@@ -87,6 +88,7 @@ class PaletteRules:
     institutional: dict[str, str]
     instituto: frozenset[str]
     deck_support: frozenset[str]
+    product: frozenset[str]
     chart: tuple[str, ...]
     chart_vars: frozenset[str]
     superseded: frozenset[str]
@@ -98,7 +100,13 @@ class PaletteRules:
     @property
     def approved(self) -> frozenset[str]:
         """Every hex that may appear in brand work without further justification."""
-        return frozenset(self.institutional) | self.instituto | self.deck_support | frozenset(self.chart)
+        return (
+            frozenset(self.institutional)
+            | self.instituto
+            | self.deck_support
+            | self.product
+            | frozenset(self.chart)
+        )
 
 
 def derive_palette(tokens: dict[str, Any]) -> PaletteRules:
@@ -129,6 +137,9 @@ def derive_palette(tokens: dict[str, Any]) -> PaletteRules:
         var_by_hex.setdefault(entry["hex"].upper(), entry["cssVar"])
     for entry in color["deckSupport"]["entries"]:
         var_by_hex.setdefault(entry["hex"].upper(), entry["cssVar"])
+    product_entries = color.get("product", {}).get("entries", [])
+    for entry in product_entries:
+        var_by_hex.setdefault(entry["hex"].upper(), entry["cssVar"])
 
     prohibition = color["prohibition"]
     white = prohibition["observedException"]["hex"].upper()
@@ -146,20 +157,14 @@ def derive_palette(tokens: dict[str, Any]) -> PaletteRules:
         institutional=institutional,
         instituto=frozenset(e["hex"].upper() for e in instituto_entries),
         deck_support=frozenset(e["hex"].upper() for e in color["deckSupport"]["entries"]),
+        product=frozenset(e["hex"].upper() for e in product_entries),
         chart=tuple(e["hex"].upper() for e in color["chart"]["entries"]),
         chart_vars=frozenset(e["cssVar"] for e in color["chart"]["entries"]),
         superseded=frozenset(hex_value.upper() for hex_value in color["supersededChart"]["entries"]),
         asset_local=frozenset(e["hex"].upper() for e in color["assetLocal"]["entries"]),
         prohibited=prohibited,
         semantic_vars=frozenset(
-            {
-                "--kunumi-ground",
-                "--kunumi-ink",
-                "--kunumi-ink-muted",
-                "--kunumi-border",
-                "--kunumi-accent",
-                "--kunumi-on-accent",
-            }
+            role["cssVar"] for role in color.get("semantic", {}).get("roles", [])
         ),
         var_by_hex=var_by_hex,
     )
@@ -315,6 +320,82 @@ def derive_geometry(tokens: dict[str, Any]) -> GeometryRules:
 
 
 @dataclass(frozen=True, slots=True)
+class LayoutRules:
+    """Responsive layout rules derived from `tokens.layout`.
+
+    Attributes:
+        breakpoints_px: The sanctioned `min-width` breakpoints, in px.
+        max_width_tolerance_px: How far below a breakpoint a `max-width` query may sit.
+        container_px: The content container's maximum width.
+    """
+
+    breakpoints_px: frozenset[float]
+    max_width_tolerance_px: float
+    container_px: float
+
+
+def derive_layout(tokens: dict[str, Any]) -> LayoutRules:
+    """Build the layout rule set from the token tree.
+
+    Args:
+        tokens: The parsed `tokens.json` mapping.
+
+    Returns:
+        The derived layout rules. An empty breakpoint set when the token tree has no layout
+        block, so an older token file still loads.
+    """
+    layout = tokens.get("layout", {})
+    breakpoints = layout.get("breakpoints", {})
+    return LayoutRules(
+        breakpoints_px=frozenset(
+            float(entry["minWidthPx"]) for entry in breakpoints.get("entries", [])
+        ),
+        max_width_tolerance_px=float(breakpoints.get("maxWidthTolerancePx", 0)),
+        container_px=float(layout.get("container", {}).get("maxWidthPx", 0)),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class InteractionRules:
+    """Interaction and mark-size rules derived from `tokens.interaction` and `tokens.logo`.
+
+    Attributes:
+        focus_ring_width_px: Width of the focus ring.
+        target_min_px: Minimum pointer target size.
+        target_recommended_px: Recommended touch target size.
+        logo_min_px: Minimum rendered lockup height of the positive RGB mark.
+        og_size_px: The Open Graph image size, as (width, height).
+    """
+
+    focus_ring_width_px: float
+    target_min_px: float
+    target_recommended_px: float
+    logo_min_px: float
+    og_size_px: tuple[int, int]
+
+
+def derive_interaction(tokens: dict[str, Any]) -> InteractionRules:
+    """Build the interaction rule set from the token tree.
+
+    Args:
+        tokens: The parsed `tokens.json` mapping.
+
+    Returns:
+        The derived interaction rules.
+    """
+    interaction = tokens.get("interaction", {})
+    target = interaction.get("targetSize", {})
+    og = tokens.get("digital", {}).get("og", {})
+    return InteractionRules(
+        focus_ring_width_px=float(interaction.get("focusRing", {}).get("widthPx", 0)),
+        target_min_px=float(target.get("minPx", 0)),
+        target_recommended_px=float(target.get("recommendedPx", 0)),
+        logo_min_px=float(tokens.get("logo", {}).get("minHeight", {}).get("positiveRgbPx", 0)),
+        og_size_px=(int(og.get("widthPx", 0)), int(og.get("heightPx", 0))),
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class GradientStop:
     """One Instituto signature gradient stop.
 
@@ -431,6 +512,8 @@ class Registry:
         palette: Derived color rules.
         typography: Derived type rules.
         geometry: Derived geometry rules.
+        layout: Derived responsive layout rules.
+        interaction: Derived interaction and mark-size rules.
         gradient: Derived Instituto gradient stops.
         rules: Every declared rule, at its default severity.
         scopes: Every scope, by name.
@@ -440,6 +523,8 @@ class Registry:
     palette: PaletteRules
     typography: TypographyRules
     geometry: GeometryRules
+    layout: LayoutRules
+    interaction: InteractionRules
     gradient: tuple[GradientStop, ...]
     rules: tuple[Rule, ...]
     scopes: dict[str, Scope]
@@ -586,6 +671,8 @@ def load_registry(tokens: dict[str, Any] | None = None) -> Registry:
         palette=derive_palette(tokens),
         typography=derive_typography(tokens),
         geometry=derive_geometry(tokens),
+        layout=derive_layout(tokens),
+        interaction=derive_interaction(tokens),
         gradient=derive_instituto_gradient(tokens),
         rules=tuple(rules),
         scopes=scopes,

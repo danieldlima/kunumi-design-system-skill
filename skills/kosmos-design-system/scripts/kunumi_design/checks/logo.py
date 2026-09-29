@@ -97,8 +97,11 @@ def logo_min_height(rule: Rule, context: Context) -> Iterable[Finding]:
     off-screen slides mounted; that file is now a contact sheet with every frame visible
     (ADR 0016), so nothing in this repository depends on the guard any more. It stays because the
     next artifact might.
+
+    The minimum is derived from `tokens.json#logo.minHeight.positiveRgbPx`, not declared as a
+    rule param, so the brandbook value lives in one place.
     """
-    minimum = float(rule.params.get("minPx", 28))
+    minimum = context.registry.interaction.logo_min_px
 
     for item in context.measurements:
         if item.exempt or not item.visible:

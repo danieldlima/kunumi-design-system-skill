@@ -1,7 +1,7 @@
 {
   "schema": "kunumi.render/v1",
   "schemaVersion": 1,
-  "artifact": "skills/kosmos-design-system/assets/web/template-preview.html",
+  "artifact": "assets/web/template-preview.html",
   "engine": "playwright-chromium",
   "renders": [
     "/Users/kunumi/dev/kunumi/kosmos-design-system-skill/skills/kosmos-design-system/assets/web/template-preview-kunumi-capa.png",
